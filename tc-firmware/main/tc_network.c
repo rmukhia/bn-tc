@@ -67,6 +67,7 @@ static struct
 #endif
 
     bool sntp_started;
+    tc_network_established_cb_t established_cb;
 } context =
 {
     .wifi = {
@@ -93,6 +94,7 @@ static struct
     },
 #endif
     .sntp_started = false,
+    .established_cb = NULL,
 };
 
 static void log_error_if_nonzero(const char* message, int error_code)
@@ -160,6 +162,8 @@ static void mqtt_event_handler(void* handler_args, esp_event_base_t base,
         {
             ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
             context.mqtt.state = MQTT_STATE_CONNECTED;
+            // for mqtt the connection is established after mqtt connection is made.
+            if (context.established_cb != NULL) context.established_cb();
         }
         break;
 
@@ -360,6 +364,9 @@ static void __wifi_event_sta_handler(int32_t event_id, void* event_data)
 #if CONFIG_TC_MQTT_ENABLED
             // start mqtt connection
             ESP_ERROR_CHECK_WITHOUT_ABORT(_mqtt_connect());
+#else
+            // For http the connection is established
+            if (context.established_cb != NULL) context.established_cb();
 #endif
         }
         break;
@@ -369,8 +376,8 @@ static void __wifi_event_sta_handler(int32_t event_id, void* event_data)
 
 static void
 _wifi_event_handler(__attribute__((unused)) void* arg,
-                     __attribute__((unused)) esp_event_base_t event_base,
-                     int32_t event_id, void* event_data)
+                    __attribute__((unused)) esp_event_base_t event_base,
+                    int32_t event_id, void* event_data)
 {
     ESP_LOGI(TAG, "event %ld", event_id);
 
@@ -383,13 +390,15 @@ _wifi_event_handler(__attribute__((unused)) void* arg,
     }
 }
 
-esp_err_t tc_wifi_start(void)
+esp_err_t tc_network_start(tc_network_established_cb_t cb)
 {
     ESP_LOGI(TAG, "Status is %d", context.wifi.status);
     if (context.wifi.status != WIFI_STAT_UNINITD)
     {
         return ESP_ERR_INVALID_STATE;
     }
+
+    context.established_cb = cb;
 
     VERIFY_SUCCESS(esp_netif_init());
     ESP_LOGI(TAG, "Status is %d", context.wifi.status);

@@ -53,11 +53,19 @@ JSON body sent over MQTT/HTTP:
 ```
 
 Encoding (10‑char hex = 5 bytes):
-- Byte 0: latitude integral part (0–255)
-- Byte 1: latitude fractional × 100 (0–99)
-- Byte 2: longitude integral part (0–255)
-- Byte 3: longitude fractional × 100 (0–99)
-- Byte 4: battery percentage integral (0–100)
+- Bytes 0–1: latitude as big‑endian uint16
+  - lat_u16 = round(((latitude + 90) / 180) × 65535)
+- Bytes 2–3: longitude as big‑endian uint16
+  - lon_u16 = round(((longitude + 180) / 360) × 65535)
+- Byte 4: battery percentage as uint8 (0–100)
+
+Notes:
+- Coordinates use WGS84 datum (GPS modules output WGS84 lat/lon).
+- Latitude range is −90..+90; longitude range is −180..+180.
+- Payload bytes are hex‑encoded uppercase (e.g., "%02X%02X%02X%02X%02X").
+- Decoding (inverse mapping):
+  - latitude = (lat_u16 / 65535) × 180 − 90
+  - longitude = (lon_u16 / 65535) × 360 − 180
 
 Implementation references: `main/main.c` (`_encode_payload`, `_create_json_payload`). Device ID from MAC: `main/tc_hal.c`.
 
@@ -94,5 +102,3 @@ Found under: `BuddyNinjaTechnicalChallenge` (from `main/Kconfig.projbuild`).
   - HTTP endpoint for POSTing telemetry JSON when MQTT is disabled.
     If you’re using the cloud app in `tc-cloud/`, its default HTTP path is `/ingest`.
     Change to the IP address of the computer running the `tc-cloud` server.
-
-

@@ -5,7 +5,8 @@
 #pragma once
 #include <esp_err.h>
 
-esp_err_t tc_wifi_start(void);
+typedef void (*tc_network_established_cb_t)(void);
+esp_err_t tc_network_start(tc_network_established_cb_t cb);
 
 #if CONFIG_TC_MQTT_ENABLED
 esp_err_t tc_mqtt_publish_telemetry(const char* topic, const char* data,

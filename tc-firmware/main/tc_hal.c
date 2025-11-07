@@ -5,6 +5,7 @@
 #include "tc_hal.h"
 #include <esp_err.h>
 #include <esp_mac.h>
+#include <math.h>
 
 /*
  * Get Device String based on MAC address.
@@ -34,7 +35,8 @@ esp_err_t tc_get_device_str(char* device_str)
 }
 
 
-static float generate_random_float(const float min, const float max) {
+static float generate_random_float(const float min, const float max)
+{
     const float scale = (float)rand() / RAND_MAX; // Random float between 0.0 and 1.0
     return min + scale * (max - min);
 }
@@ -43,7 +45,9 @@ esp_err_t tc_get_gps_location(float* latitude, float* longitude)
 {
     // For simulation purposes, return random coordinates.
     *latitude = generate_random_float(13.40f, 13.90f);
+    *latitude = roundf(*latitude * 100.0f) / 100.0f; // round to 2 decimal places
     *longitude = generate_random_float(100.20f, 101.0f);
+    *longitude = roundf(*longitude * 100.0f) / 100.0f; // round to 2 decimal places
     return ESP_OK; // in case of sensor failure, return ESP_FAIL
 }
 

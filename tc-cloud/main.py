@@ -6,6 +6,7 @@ import os
 import sqlite3
 from contextlib import asynccontextmanager
 from datetime import datetime
+import struct
 from typing import Any, Dict, List
 
 from dotenv import load_dotenv
@@ -77,35 +78,28 @@ db = SQLite(DATABASE_PATH)
 # ------------------------------------------------------------
 # Payload Processing
 # ------------------------------------------------------------
-def decode_payload(payload: str) -> Dict[str, float]:
-    """Convert hexadecimal payload into numeric values"""
-    payload = payload.strip().upper()
-    if len(payload) != 10:
-        raise ValueError("Payload must be exactly 10 hex characters")
+def decode_payload(payload_hex: str) -> Dict[str, float]:
+    """Decode 5-byte hex payload: [lat_u16_be][lon_u16_be][battery_u8].
+    Latitude spans [-90,+90]; longitude spans [-180,+180]; battery 0..100.
+    """
+    h = payload_hex.strip().upper()
+    if len(h) != 10:
+        raise ValueError("Payload must be exactly 10 hex characters (5 bytes)")
+
+    b = bytes.fromhex(h)
+    lat_u16, lon_u16, batt = struct.unpack('!HHB', b)
+
+    # inverse scaling (mirror of the encoder)
+    lat = (lat_u16 / 65535.0) * 180.0 - 90.0
+    lon = (lon_u16 / 65535.0) * 360.0 - 180.0
+
+    return {
+        "latitude": round(lat, 2),
+        "longitude": round(lon, 2),
+        "battery": batt,
+    }
+
     
-    try:
-        # Longitude: first 2 hex digits integral, next 2 hex digits fractional
-        lon_hex_integral = payload[0:2]
-        lon_hex_fractional = payload[2:4]
-        longitude = int(lon_hex_integral, 16) + int(lon_hex_fractional, 16) / 100.0
-
-        # Latitude: first 2 hex digits integral, next 2 hex digits fractional
-        lat_hex_integral = payload[4:6]
-        lat_hex_fractional = payload[6:8]
-        latitude = int(lat_hex_integral, 16) + int(lat_hex_fractional, 16) / 100.0
-        
-        # Battery: last 2 hex digits
-        bat_hex = payload[8:10]
-        battery = int(bat_hex, 16)
-        
-        return {
-            "longitude": round(longitude, 2),
-            "latitude": round(latitude, 2),
-            "battery": battery
-        }
-    except ValueError as e:
-        raise ValueError(f"Invalid hex payload: {payload}") from e
-
 def process_telemetry_message(message: Dict[str, str]) -> Dict[str, Any]:
     """Process incoming telemetry message and return database record"""
     required_fields = ["id", "payload", "date", "time"]
