@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Technical Challenge</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      body { margin: 24px; }
+      h1 { margin: 0 0 8px 0; }
+      .meta { color: #555; margin-bottom: 16px; }
+      table { border-collapse: collapse; width: 100%; }
+      th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+      th { background: #f6f6f6; }
+      .toolbar { display: flex; gap: 8px; align-items: center; margin: 16px 0; }
+      .btn { padding: 8px 12px; border: 1px solid #888; border-radius: 4px; background: #fff; cursor: pointer; }
+      .btn:hover { background: #f0f0f0; }
+    </style>
+  </head>
+  <body>
+    <h1>Technical Challenge Dashboard</h1>
+    <div class="meta">Receiving telemetry data via MQTT and HTTP</div>
+
+    <div class="toolbar">
+      <button class="btn" onclick="refresh()">Refresh</button>
+      <button class="btn" onclick="downloadCSV()">Download CSV</button>
+      <button class="btn" onclick="downloadCSVProcessed()">Download 12 Hour CSV with 1 Hour Interval</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Device ID</th>
+          <th>Longitude</th>
+          <th>Latitude</th>
+          <th>Battery</th>
+          <th>Date</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in records %}
+        <tr>
+          <td>{{ r.id }}</td>
+          <td>{{ r.longitude }}</td>
+          <td>{{ r.latitude }}</td>
+          <td>{{ r.battery }}</td>
+          <td>{{ r.date }}</td>
+          <td>{{ r.time }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <script>
+      function refresh(){ window.location.reload(); }
+      
+      function downloadCSV() {
+        // Open the CSV download endpoint in a new window/tab to trigger download
+        window.open('/download-csv-raw', '_blank');
+      }
+      function downloadCSVProcessed() {
+        // Open the processed CSV download endpoint in a new window/tab to trigger download
+        window.open('/download-csv-processed', '_blank');
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,43 @@
+menu "BuddyNinjaTechnicalChallenge"
+    config TC_PAYLOAD_GPS_INTERVAL
+        int "GPS Payload Interval in Seconds"
+        default 15
+        help
+            Interval in seconds to send gps data.
+    config TC_WIFI_STA_SSID
+        string "WiFi STA SSID (2.4G)"
+        default "your_ssid"
+        help
+            SSID of the WiFi network to connect to in station mode. Only supports 2.4G networks.
+    config TC_WIFI_STA_PASSWORD
+        string "WiFi STA Password"
+        default "your_password"
+        help
+            Password of the WiFi network to connect to in station mode.
+
+    config TC_SNTP_SERVER
+        string "SNTP Server"
+        default "pool.ntp.org"
+        help
+            SNTP server to synchronize time.
+
+    config TC_MQTT_ENABLED
+        bool "Enable MQTT"
+        default y
+        help
+            Enable or disable MQTT functionality.
+
+    config TC_MQTT_BROKER_URL
+        string "MQTT Broker URL"
+        default "mqtt://broker.emqx.io:1883"
+        depends on TC_MQTT_ENABLED=y
+        help
+            URL of the MQTT broker to connect to.
+
+    config TC_HTTP_SERVER_URL
+        string "HTTP Server URL"
+        default "http://192.168.1.2:8000/injest"
+        depends on TC_MQTT_ENABLED=n
+        help
+            URL of the HTTP server to send data to.
+endmenu
