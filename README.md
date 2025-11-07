@@ -1,4 +1,4 @@
-# Telemetry Challenge (tc-cloud + tc-firmware)
+# Technical Challenge (tc-cloud + tc-firmware)
 
 End-to-end IoT telemetry demo with an ESP32 firmware(tc-firmware) and a FastAPI app (tc-cloud). The ESP32 publishes GPS + battery data over MQTT or HTTP (select one in firmware); the FastAPI app ingests, stores to SQLite, and serves a simple dashboard with CSV downloads.
 
