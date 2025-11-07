@@ -53,9 +53,9 @@ JSON body sent over MQTT/HTTP:
 ```
 
 Encoding (10‑char hex = 5 bytes):
-- Bytes 0–1: latitude as big‑endian uint16
+- Bytes 0–1: latitude as network byte order (big‑endian) uint16
   - lat_u16 = round(((latitude + 90) / 180) × 65535)
-- Bytes 2–3: longitude as big‑endian uint16
+- Bytes 2–3: longitude as network byte order (big‑endian) uint16
   - lon_u16 = round(((longitude + 180) / 360) × 65535)
 - Byte 4: battery percentage as uint8 (0–100)
 
